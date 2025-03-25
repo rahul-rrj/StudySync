@@ -1,0 +1,76 @@
+// Select elements
+const sliderList = document.querySelector('.slider .list');
+const dots = document.querySelectorAll('.slider .dots li');
+const prevButton = document.querySelector('#prev');
+const nextButton = document.querySelector('#next');
+const slides = document.querySelectorAll('.slider .list .item');
+const carousel = document.querySelector('.carousel');
+const items = document.querySelectorAll('.carousel .item');
+const afPrevButton = document.querySelector('.af-prev');
+const afNextButton = document.querySelector('.af-next');
+
+let currentIndex = 0;
+const totalSlides = slides.length;
+let autoScroll;
+
+// Function to update the slider
+function updateSlider() {
+    const offset = -currentIndex * 100;
+    sliderList.style.transition = 'left 0.3s ease';
+    sliderList.style.left = `${offset}%`;
+
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
+    });
+
+    slides.forEach((slide, index) => {
+        slide.classList.toggle('middle', index === currentIndex);
+    });
+}
+
+// Function to change slides
+function changeSlide(direction) {
+    currentIndex = (currentIndex + direction + totalSlides) % totalSlides;
+    updateSlider();
+}
+
+// Event listeners for navigation
+nextButton.addEventListener('click', () => changeSlide(1));
+prevButton.addEventListener('click', () => changeSlide(-1));
+dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+        currentIndex = index;
+        updateSlider();
+    });
+});
+
+// Auto-slide
+setInterval(() => changeSlide(1), 3000);
+
+// Carousel scrolling
+function scrollCarousel(direction) {
+    const itemWidth = items[0].offsetWidth + 20;
+    carousel.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
+    resetAutoScroll();
+}
+
+function autoMove() {
+    const itemWidth = items[0].offsetWidth + 20;
+    if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth) {
+        carousel.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+        carousel.scrollBy({ left: itemWidth, behavior: 'smooth' });
+    }
+}
+
+function resetAutoScroll() {
+    clearInterval(autoScroll);
+    autoScroll = setInterval(autoMove, 3000);
+}
+
+// Event listeners for manual scrolling
+afPrevButton.addEventListener('click', () => scrollCarousel(-1));
+afNextButton.addEventListener('click', () => scrollCarousel(1));
+
+// Initialize auto-scroll
+autoScroll = setInterval(autoMove, 3000);
