@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extract Audio - Video Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">Video Editor</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../index.html">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h1 class="text-center mb-4">Extract Audio</h1>
+        <p class="text-center mb-4">Extract audio from your video and save it as an MP3 file.</p>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="upload-section" id="dropZone">
+                    <input type="file" id="fileInput" accept="video/*">
+                    <p>Drag and drop your video here or click to select</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">Select Video</button>
+                </div>
+
+                <div class="preview-section mt-4">
+                    <h3>Video Preview</h3>
+                    <video id="videoPreview" controls class="w-100"></video>
+                </div>
+
+                <div class="info-box mt-4">
+                    <h3>Audio Settings:</h3>
+                    <ul>
+                        <li>Output Format: MP3</li>
+                        <li>Quality: 192kbps</li>
+                        <li>Channels: Stereo</li>
+                        <li>Sample Rate: 44.1kHz</li>
+                    </ul>
+                </div>
+
+                <div class="progress mt-4" style="display: none;">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+
+                <div class="alert alert-danger mt-3" id="errorMessage" style="display: none;"></div>
+                <div class="alert alert-success mt-3" id="successMessage" style="display: none;"></div>
+
+                <button class="btn btn-primary w-100 mt-4" id="extractButton" disabled>Extract Audio</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="processing-overlay" id="processingOverlay">
+        <div class="processing-content">
+            <div class="processing-spinner"></div>
+            <div class="processing-message">Processing your video...</div>
+            <div class="processing-progress">
+                <div class="processing-progress-bar"></div>
+            </div>
+            <button class="btn btn-danger mt-3" id="retryButton" style="display: none;">Retry</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/extract-audio.js"></script>
+</body>
+</html> 

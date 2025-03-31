@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>PDF Manager</h1>
+    <div class="background-pattern"></div>
+
+
+<div class="functions">
+   
+        <!-- Merge PDFs -->
+        <div class="container">
+            <video class="video-bg" autoplay loop muted>
+                <source src="Video.mp4" type="video/mp4">
+            </video>
+            
+            <h2>Merge PDFs</h2>
+            <div class="folder">
+                <div class="front-side">
+                    <div class="tip"></div>
+                    <div class="cover"></div>
+                </div>
+                <div class="back-side cover"></div>
+            </div>
+            <label class="custom-file-upload">
+                <input type="file" id="mergeFiles" multiple accept=".pdf" onchange="toggleButton('mergeFiles', 'mergeButton')">
+                Choose PDFs
+            </label>
+            <button id="mergeButton" onclick="uploadFiles('/merge', 'mergeFiles')" disabled>Merge</button>
+        </div>
+    
+        <!-- Split PDF -->
+        <div class="container">
+            <video class="video-bg" autoplay loop muted>
+                <source src="Video.mp4" type="video/mp4">
+            </video>
+            
+            <div class="folder">
+                <div class="front-side">
+                    <div class="tip"></div>
+                    <div class="cover"></div>
+                </div>
+                <div class="back-side cover"></div>
+            </div>
+             <div class="mid">
+                <h2>Split PDF</h2>
+            
+             </div> <label class="custom-file-upload">
+                    <input type="file" id="splitFile" accept=".pdf" onchange="toggleButton('splitFile', 'splitButton')">
+                    Choose PDF
+                </label>
+            <div class="half">
+                <div class="input-container">
+                    <input type="number" placeholder="Start Page">
+                    <input type="number" placeholder="End Page">
+                </div>
+                
+                <button id="splitButton" onclick="uploadFiles('/split', 'splitFile', true)" disabled>Split</button>
+           
+            </div>
+            </div>
+    
+        <!-- Convert Images to PDF -->
+        <div class="container">
+            <video class="video-bg" autoplay loop muted>
+                <source src="Video.mp4" type="video/mp4">
+            </video>
+            <h2>Convert Images to PDF</h2>
+            <div class="folder">
+                <div class="front-side">
+                    <div class="tip"></div>
+                    <div class="cover"></div>
+                </div>
+                <div class="back-side cover"></div>
+            </div>
+            <label class="custom-file-upload">
+                <input type="file" id="imageFiles" multiple accept=".png, .jpg, .jpeg" onchange="toggleButton('imageFiles', 'convertButton')">
+                Choose Images
+            </label>
+            <button id="convertButton" onclick="uploadFiles('/images-to-pdf', 'imageFiles')" disabled>Convert</button>
+        </div>
+</div>
+
+    <script>
+        // Enable/Disable Button Based on File Selection
+        function toggleButton(inputId, buttonId) {
+            let input = document.getElementById(inputId);
+            let button = document.getElementById(buttonId);
+            button.disabled = input.files.length === 0;
+        }
+
+        // Upload Files and Handle Server Response
+        async function uploadFiles(endpoint, inputId, isSplit = false) {
+            let formData = new FormData();
+            let inputElement = document.getElementById(inputId);
+            let files = inputElement.files;
+
+            if (files.length === 0) {
+                alert("Please select a file.");
+                return;
+            }
+
+            for (let file of files) {
+                formData.append("file", file);
+            }
+
+            if (isSplit) {
+                let startPage = document.getElementById("startPage").value;
+                let endPage = document.getElementById("endPage").value;
+
+                if (!startPage || !endPage || parseInt(startPage) > parseInt(endPage)) {
+                    alert("Please enter valid page numbers.");
+                    return;
+                }
+
+                formData.append("start", startPage);
+                formData.append("end", endPage);
+            }
+
+            try {
+                let response = await fetch("http://127.0.0.1:5000" + endpoint, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    let errorText = await response.json();
+                    alert("Error: " + errorText.error);
+                    return;
+                }
+
+                let blob = await response.blob();
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = endpoint.replace("/", "") + ".pdf";
+                a.click();
+            } catch (error) {
+                console.error("Upload failed:", error);
+                alert("Something went wrong. Check the console for details.");
+            }
+        }
+    </script>
+
+</body>
+</html>

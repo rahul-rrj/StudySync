@@ -1,0 +1,430 @@
+/* General Page Styling */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f4f4f4;
+    padding: 50px;
+    width: 100vw;
+}
+html, body {
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    width: 100%;
+  }
+  
+
+/* Container Styling */
+.container {
+    --transition: 350ms;
+    --folder-W: 120px;
+    --folder-H: 80px;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 90px auto;  /* Add margin for spacing */
+    padding: 20px;
+   
+    border-radius: 15px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    
+    height: calc(var(--folder-H) * 3);
+    position: relative;
+    width: calc(var(--folder-H) * 4);
+ 
+}
+
+.video-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
+}
+
+
+/* Folder Styling */
+.folder {
+    position: absolute;
+    top: -20px;
+    left: 25%;
+    transform: translateX(-50%);
+    animation: float 2.5s infinite ease-in-out;
+    transition: transform var(--transition) ease;
+}
+
+/* Hover Effect on Folder */
+.folder:hover {
+    transform: scale(1.05);
+}
+
+/* Folder Front & Back Sides */
+.folder .front-side,
+.folder .back-side {
+    position: absolute;
+    transition: transform var(--transition);
+    transform-origin: bottom center;
+}
+label{
+    margin: 20px;
+}
+.input-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Space between inputs */
+}
+.half{
+    display:flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+    gap:20px;
+}
+input {
+    width: 25%px; /* Smaller width */
+    padding: 8px;
+    border: 2px solid #00ffff;
+    border-radius: 5px;
+    font-size: 14px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    outline: none;
+}
+
+.mid {
+    text-align: center;
+    position: relative;
+    margin-top: 120px; /* Pushes text down */
+}
+
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+button {
+    display: inline-block;
+    white-space: nowrap; /* Prevents text from breaking */
+    padding: 12px 24px; /* Adds enough space */
+    font-size: 16px;
+    font-weight: bold;
+}
+
+
+
+/* Back Side Layering */
+.folder .back-side::before,
+.folder .back-side::after {
+    content: "";
+    display: block;
+    background-color: white;
+    opacity: 0.5;
+    width: var(--folder-W);
+    height: var(--folder-H);
+    position: absolute;
+    transform-origin: bottom center;
+    border-radius: 15px;
+    transition: transform 350ms;
+}
+
+/* Folder Cover Animation */
+.container:hover .back-side::before {
+    transform: rotateX(-5deg) skewX(5deg);
+}
+
+.container:hover .back-side::after {
+    transform: rotateX(-15deg) skewX(12deg);
+}
+
+.folder .front-side {
+    z-index: 1;
+}
+
+.container:hover .front-side {
+    transform: rotateX(-40deg) skewX(15deg);
+}
+
+/* Folder Tip Styling */
+.folder .tip {
+    background: linear-gradient(135deg, #ff9a56, #ff6f56);
+    width: 80px;
+    height: 20px;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: -10px;
+    z-index: 2;
+}
+
+/* Folder Cover */
+.folder .cover {
+  background-color: #FFE53B;
+  background-image: linear-gradient(147deg, #FFE53B 0%, #FF2525 74%);
+  
+    width: var(--folder-W);
+    height: var(--folder-H);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+/* Custom File Upload Button */
+.custom-file-upload {
+    font-size: 1.1em;
+    color: #ffffff;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background var(--transition) ease;
+    display: inline-block;
+    width: 20%;
+    padding: 10px 35px;
+    position: relative;
+}
+
+/* Hover Effect on File Upload Button */
+.custom-file-upload:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Hide Default File Input */
+.custom-file-upload input[type="file"] {
+    display: none;
+}
+
+/* Floating Animation */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+
+.functions{
+    display:flex;
+    height: 100%;
+    width:100%;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    
+}
+.background-pattern {
+    width: 100%;
+    height: 100%;
+    --bg: linear-gradient(
+        45deg,
+        rgb(0, 0, 0) 25%,
+        transparent 25%,
+        transparent 75%,
+        rgb(0, 0, 0) 75%,
+        rgb(0, 0, 0)
+      ),
+      linear-gradient(
+        45deg,
+        rgb(0, 0, 0) 25%,
+        white 25%,
+        white 75%,
+        rgb(0, 0, 0) 75%,
+        rgb(0, 0, 0)
+      );
+    --bgsize: 60px 60px;
+    --bgposition: 0 0, 30px 30px;
+    background-color: white;
+    background-image: var(--bg);
+    background-size: var(--bgsize);
+    background-position: var(--bgposition);
+    position: fixed; /* Ensures it covers the entire viewport */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    overflow: hidden;
+    box-shadow: inset 0px 0px 500px rgb(15, 15, 15);
+    z-index: -1; /* Keeps it behind other elements */
+  }
+  
+  .background-pattern::before {
+    content: "";
+    width: 100%;
+    box-shadow: 0px -100px 500px black, inset 0px 100px 500px rgb(15, 15, 15);
+    position: absolute;
+    top: 55%;
+    background-image: var(--bg);
+    background-size: var(--bgsize);
+    background-position: var(--bgposition);
+    transform-origin: top;
+    transform: rotateX(80deg);
+  }
+  
+.container {
+    --transition: 350ms;
+    --folder-W: 360px; /* Increase folder width */
+    --folder-H: 280px; /* Increase folder height */
+    height: calc(var(--folder-H) * 2); 
+   padding-bottom: 70px;
+}
+.folder {
+    position: absolute;
+    top: 16%;  /* Move the folder to the vertical center */
+    left: 35%; /* Move the folder to the horizontal center */
+    transform: translate(-50%, -50%); /* Perfect centering using transform */
+}
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 16px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    transition: all 0.4s ease-in-out;
+    box-shadow: 0 10px 20px rgba(0, 114, 255, 0.4), 0 4px 8px rgba(0, 114, 255, 0.3);
+    overflow: hidden;
+    transform: perspective(100px) rotateX(10deg);
+  }
+  
+  .custom-file-upload::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10%);
+    transform: scale(0);
+    transition: transform 0.6s ease-out;
+  }
+  
+  .custom-file-upload:hover::before {
+    transform: scale(2);
+  }
+  
+  .custom-file-upload:hover {
+    background: linear-gradient(90deg, #0072ff, #00c6ff);
+    box-shadow: 0 15px 30px rgba(0, 114, 255, 0.5), 0 6px 12px rgba(0, 114, 255, 0.4);
+    transform: perspective(100px) rotateX(5deg) scale(1.05);
+  }
+  
+  .custom-file-upload:active {
+    transform: scale(0.95);
+    box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4);
+  }
+  
+  /* Glowing Border Effect */
+  .custom-file-upload::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    border-radius: 15px;
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    z-index: -1;
+    filter: blur(10px);
+    animation: glowEffect 3s infinite linear;
+  }
+  
+  @keyframes glowEffect {
+    0% {
+      opacity: 0.6;
+      filter: blur(8px);
+    }
+    50% {
+      opacity: 1;
+      filter: blur(12px);
+    }
+    100% {
+      opacity: 0.6;
+      filter: blur(8px);
+    }
+  }
+  
+  input[type="file"] {
+    display: none;
+  }
+/* Stylish Heading (Merge PDFs) */
+h2 {
+    font-size: 28px;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+    text-shadow: 0px 0px 10px rgba(0, 255, 255, 0.7);
+    position: relative;
+    animation: glowText 3s infinite alternate;
+  
+  }
+  
+  @keyframes glowText {
+    0% {
+      text-shadow: 0px 0px 5px rgba(0, 255, 255, 0.6);
+    }
+    100% {
+      text-shadow: 0px 0px 20px rgba(0, 255, 255, 1);
+    }
+  }
+  
+  /* Neon Animated Submit Button */
+  button {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 35px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    box-shadow: 0px 0px 20px rgba(255, 0, 255, 0.6);
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease-in-out;
+  }
+  
+  button:hover::before {
+    left: 100%;
+  }
+  
+  button:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 0px 30px rgba(255, 0, 255, 0.8);
+  }
+  
+  button:active {
+    transform: scale(0.95);
+    box-shadow: 0px 0px 15px rgba(255, 0, 255, 0.5);
+  }
+    

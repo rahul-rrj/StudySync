@@ -1,0 +1,16 @@
+1. Install Required Dependencies
+
+pip install flask language-tool-python sumy transformers torch nltk flask_cors
+
+Flask → Web framework for backend.
+
+Flask-CORS → Handles cross-origin requests.
+
+LanguageTool → Grammar checking.
+
+sumy→ Text summarization.
+
+Transformers + Torch → GPT-based AI writer.
+
+NLTK → Helps with text processing.
+
