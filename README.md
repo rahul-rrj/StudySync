@@ -48,24 +48,6 @@ nltk.download('punkt')
 nltk.download('punkt_tab')
  ```
 
-
-
-Workspace
-
-Readme.txt 2-82
-
-README 2-19
-
-README.txt 2-15
-
-README.md 23-26
-
-Readme.txt 75-82
-
-... More ( 17 +)
-
-I'll create a comprehensive README.md file that lists all required libraries and dependencies based on the analysis of your project.
-
 ```markdown
 # SyncSphere - Professional File Management Platform
 
