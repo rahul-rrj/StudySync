@@ -1,8 +1,7 @@
 # SyncSphere - Professional File Management Platform
 
 ## Overview
-SyncSphere is a comprehensive file management platform that includes various tools for handling PDFs, images, videos, and AI-powered text processing.
-
+SyncSphere is a comprehensive and collaboraive enabling group communication and platform that includes various tools for handling PDFs, images, videos, and AI-powered text processing.
 ## Prerequisites
 - Python 3.8 or higher
 - FFmpeg (required for video processing)
