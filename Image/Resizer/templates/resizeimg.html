@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Resizer Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #3a86ff;
+            --secondary: #8338ec;
+            --accent: #ff006e;
+            --dark: #0f0f1b;
+            --darker: #080811;
+            --light: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            background: rgba(15, 15, 27, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                        0 0 30px rgba(58, 134, 255, 0.3);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6),
+                        0 0 40px rgba(58, 134, 255, 0.4);
+        }
+        
+        h2 {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(58, 134, 255, 0.3);
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .file-upload {
+            background: linear-gradient(135deg, rgba(58, 134, 255, 0.2), rgba(131, 56, 236, 0.2));
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            background: linear-gradient(135deg, rgba(58, 134, 255, 0.3), rgba(131, 56, 236, 0.3));
+            border-color: var(--primary);
+        }
+        
+        input[type="number"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.3);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+        
+        .btn:hover::before {
+            left: 0;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        #previewImage, #resultImage {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        #previewImage:hover, #resultImage:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        
+        #downloadLink {
+            background: linear-gradient(135deg, var(--accent), #ff006e);
+            transition: all 0.3s ease;
+        }
+        
+        #downloadLink:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(255, 0, 110, 0.4);
+        }
+        
+        .glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(58, 134, 255, 0.2), transparent 70%);
+            z-index: -1;
+            animation: pulse 8s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+            100% {
+                opacity: 0.3;
+            }
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 md:p-8">
+    <div class="glow"></div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container w-full max-w-2xl p-8 animate__animated animate__fadeIn animate__delay-0.5s">
+        <h2 class="text-3xl font-bold mb-6 text-center">Image Resizer Pro</h2>
+        
+        <!-- Image Upload -->
+        <label for="imageInput" class="file-upload flex flex-col items-center justify-center p-8 mb-6 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <span class="text-gray-300">Click to upload an image</span>
+            <span class="text-sm text-gray-500 mt-1">PNG, JPG, JPEG supported</span>
+            <input type="file" id="imageInput" accept="image/*" class="hidden">
+        </label>
+        
+        <!-- Image Preview -->
+        <img id="previewImage" alt="Preview" class="w-full rounded-xl mb-6 hidden">
+        
+        <!-- Resize Inputs -->
+        <div class="flex flex-wrap justify-center gap-4 mb-6">
+            <div class="flex items-center">
+                <label for="width" class="mr-2 text-gray-300">Width:</label>
+                <input type="number" id="width" value="800" class="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex items-center">
+                <label for="height" class="mr-2 text-gray-300">Height:</label>
+                <input type="number" id="height" value="600" class="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+        </div>
+        
+        <!-- Resize Button -->
+        <button id="resizeButton" class="btn w-full py-3 px-6 rounded-lg font-medium mb-6 shadow-lg transform transition-all duration-300 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            Resize Image
+        </button>
+        
+        <!-- Processed Image -->
+        <h3 class="text-xl font-semibold mb-4 text-center text-gray-300">Processed Image</h3>
+        <img id="resultImage" alt="Resized Image" class="w-full rounded-xl mb-6 hidden">
+        
+        <!-- Download Link -->
+        <a id="downloadLink" class="btn inline-block w-full py-3 px-6 rounded-lg font-medium text-center shadow-lg transform transition-all duration-300 hover:shadow-xl hidden">
+            Download Resized Image
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block ml-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+        </a>
+    </div>
+
+    <script>
+        // Original functionality remains exactly the same
+        document.getElementById("imageInput").addEventListener("change", function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById("previewImage").src = e.target.result;
+                    document.getElementById("previewImage").style.display = "block";
+                    document.getElementById("resizeButton").disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById("resizeButton").addEventListener("click", function () {
+            const file = document.getElementById("imageInput").files[0];
+            if (!file) {
+                alert("Please upload an image first.");
+                return;
+            }
+
+            const width = document.getElementById("width").value;
+            const height = document.getElementById("height").value;
+
+            const formData = new FormData();
+            formData.append("image", file);
+            formData.append("width", width);
+            formData.append("height", height);
+
+            fetch("/resize", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const resultImage = document.getElementById("resultImage");
+                resultImage.src = url;
+                resultImage.style.display = "block";
+
+                const downloadLink = document.getElementById("downloadLink");
+                downloadLink.href = url;
+                downloadLink.style.display = "inline-block";
+                downloadLink.download = "resized_image.jpg";
+            })
+            .catch(error => console.error("Error:", error));
+        });
+
+        // Particle animation for background
+        document.addEventListener('DOMContentLoaded', function() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 3 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 10 + 10;
+                const opacity = Math.random() * 0.5 + 0.1;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.opacity = opacity;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                
+                particlesContainer.appendChild(particle);
+            }
+            
+            // Add CSS for floating animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0% {
+                        transform: translateY(0) translateX(0);
+                    }
+                    50% {
+                        transform: translateY(-100px) translateX(20px);
+                    }
+                    100% {
+                        transform: translateY(0) translateX(0);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Format Converter | Transform Images Seamlessly</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .file-upload-input {
+            position: absolute;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .dropzone {
+            border: 2px dashed rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        .dropzone:hover {
+            border-color: rgba(255,255,255,0.5);
+            background-color: rgba(255,255,255,0.05);
+        }
+        .dropzone.active {
+            border-color: #4ade80;
+            background-color: rgba(74, 222, 128, 0.1);
+        }
+        .folder-icon {
+            position: relative;
+            width: 120px;
+            height: 90px;
+            background: #3b82f6;
+            border-radius: 0 6px 6px 6px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+        }
+        .folder-icon:hover {
+            transform: translateY(-5px);
+        }
+        .folder-icon::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 60px;
+            height: 20px;
+            background: #3b82f6;
+            border-radius: 6px 6px 0 0;
+        }
+        .folder-icon::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 40px;
+            width: 20px;
+            height: 10px;
+            background: #2563eb;
+            border-radius: 0 0 6px 6px;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg text-white font-sans">
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Image Format Converter</h1>
+            <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+                Transform your images between PNG, JPG, WebP, and GIF formats with just a few clicks
+            </p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-4xl mx-auto">
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/10">
+                <!-- Upload Section -->
+                <div id="dropzone" class="dropzone rounded-xl p-8 mb-8 text-center cursor-pointer transition-all duration-300">
+                    <div class="flex flex-col items-center justify-center space-y-6">
+                        <div class="folder-icon mb-4"></div>
+                        <div class="text-center">
+                            <h3 class="text-2xl font-semibold mb-2">Drag & Drop Your Image</h3>
+                            <p class="text-blue-100 mb-6">or click to browse files</p>
+                            <label class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-full font-medium cursor-pointer transition-colors duration-300">
+                                <input type="file" id="imageFile" accept=".png, .jpg, .jpeg, .webp, .gif" class="file-upload-input">
+                                <span class="flex items-center justify-center">
+                                    <i class="fas fa-cloud-upload-alt mr-2"></i> Choose an Image
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Section (Hidden by default) -->
+                <div id="previewSection" class="hidden mb-8">
+                    <div class="flex flex-col md:flex-row items-center justify-between bg-white/5 rounded-xl p-4">
+                        <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                            <img id="imagePreview" src="#" alt="Preview" class="w-16 h-16 object-cover rounded-lg">
+                            <div>
+                                <p id="fileName" class="font-medium"></p>
+                                <p id="fileSize" class="text-sm text-blue-100"></p>
+                            </div>
+                        </div>
+                        <button id="removeFile" class="text-red-400 hover:text-red-300 transition-colors">
+                            <i class="fas fa-times mr-1"></i> Remove
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Conversion Options -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label for="formatSelect" class="block text-sm font-medium mb-2">Output Format</label>
+                        <div class="relative">
+                            <select id="formatSelect" class="w-full bg-white/10 border border-white/20 rounded-lg py-3 px-4 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="png">PNG (Portable Network Graphics)</option>
+                                <option value="jpg">JPG (Joint Photographic Experts Group)</option>
+                                <option value="webp">WebP (Modern Web Format)</option>
+                                <option value="gif">GIF (Graphics Interchange Format)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Quality (JPG/WebP)</label>
+                        <div class="flex items-center space-x-4">
+                            <input type="range" id="qualitySlider" min="1" max="100" value="90" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer">
+                            <span id="qualityValue" class="w-12 text-center font-medium">90%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Convert Button -->
+                <div class="text-center">
+                    <button id="convertBtn" onclick="convertImage()" class="px-8 py-4 bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 rounded-full font-bold text-lg shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50">
+                        <i class="fas fa-exchange-alt mr-2"></i> Convert Image
+                    </button>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white/5 p-6 rounded-xl border border-white/10 hover:border-blue-400 transition-all">
+                    <div class="text-blue-300 mb-4 text-3xl">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Lightning Fast</h3>
+                    <p class="text-blue-100">Convert images in seconds with our optimized processing engine.</p>
+                </div>
+                <div class="bg-white/5 p-6 rounded-xl border border-white/10 hover:border-blue-400 transition-all">
+                    <div class="text-blue-300 mb-4 text-3xl">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Secure Processing</h3>
+                    <p class="text-blue-100">Your images are processed in your browser - no server uploads required.</p>
+                </div>
+                <div class="bg-white/5 p-6 rounded-xl border border-white/10 hover:border-blue-400 transition-all">
+                    <div class="text-blue-300 mb-4 text-3xl">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Optimized Output</h3>
+                    <p class="text-blue-100">Get perfectly optimized images for web, mobile, or print.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-20 text-center text-blue-100 text-sm">
+            <p>© 2023 Image Format Converter. All rights reserved.</p>
+            <p class="mt-2">Built with <i class="fas fa-heart text-red-400"></i> for designers and developers</p>
+        </footer>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-6"></div>
+            <h3 class="text-2xl font-bold mb-2">Converting Your Image</h3>
+            <p class="text-blue-100 mb-6">This usually takes just a few seconds...</p>
+            <div class="w-full bg-white/20 rounded-full h-2">
+                <div id="progressBar" class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full w-0 transition-all duration-300"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const imageFileInput = document.getElementById('imageFile');
+        const dropzone = document.getElementById('dropzone');
+        const previewSection = document.getElementById('previewSection');
+        const imagePreview = document.getElementById('imagePreview');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFileBtn = document.getElementById('removeFile');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityValue = document.getElementById('qualityValue');
+        const convertBtn = document.getElementById('convertBtn');
+        const loadingModal = document.getElementById('loadingModal');
+        const progressBar = document.getElementById('progressBar');
+
+        // Event Listeners
+        imageFileInput.addEventListener('change', handleFileSelect);
+        removeFileBtn.addEventListener('click', resetFileInput);
+        qualitySlider.addEventListener('input', updateQualityValue);
+        
+        // Drag and Drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropzone.classList.add('active');
+        }
+
+        function unhighlight() {
+            dropzone.classList.remove('active');
+        }
+
+        dropzone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                imageFileInput.files = files;
+                handleFileSelect({ target: imageFileInput });
+            }
+        }
+
+        // File selection handler
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file (PNG, JPG, WebP, GIF)');
+                return;
+            }
+
+            // Update preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                previewSection.classList.remove('hidden');
+                dropzone.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Reset file input
+        function resetFileInput() {
+            imageFileInput.value = '';
+            previewSection.classList.add('hidden');
+            dropzone.classList.remove('hidden');
+        }
+
+        // Update quality value display
+        function updateQualityValue() {
+            qualityValue.textContent = `${qualitySlider.value}%`;
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Convert image function
+        async function convertImage() {
+            const file = imageFileInput.files[0];
+            if (!file) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const format = document.getElementById('formatSelect').value;
+            const quality = qualitySlider.value / 100;
+
+            // Show loading modal
+            loadingModal.classList.remove('hidden');
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 90) clearInterval(progressInterval);
+                progressBar.style.width = `${Math.min(progress, 100)}%`;
+            }, 300);
+
+            try {
+                // In a real implementation, you would send this to your backend
+                // For demo purposes, we'll simulate the conversion
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Simulate successful conversion
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                
+                // Create a download link (simulated)
+                const blob = await simulateConversion(file, format, quality);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `converted-image.${format}`;
+                
+                // Hide loading modal after a brief delay
+                setTimeout(() => {
+                    loadingModal.classList.add('hidden');
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }, 500);
+                
+            } catch (error) {
+                clearInterval(progressInterval);
+                loadingModal.classList.add('hidden');
+                alert('Conversion failed: ' + error.message);
+                console.error('Conversion error:', error);
+            }
+        }
+
+        // Simulate conversion (for demo purposes)
+        function simulateConversion(file, format, quality) {
+            return new Promise((resolve, reject) => {
+                // In a real app, this would be done by your backend
+                // Here we just return the original file as a blob
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const blob = new Blob([reader.result], { type: `image/${format}` });
+                    resolve(blob);
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Tooltip initialization
+        document.querySelectorAll('.tooltip').forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                const tooltipText = this.querySelector('.tooltip-text');
+                tooltipText.style.visibility = 'visible';
+                tooltipText.style.opacity = '1';
+            });
+            element.addEventListener('mouseleave', function() {
+                const tooltipText = this.querySelector('.tooltip-text');
+                tooltipText.style.visibility = 'hidden';
+                tooltipText.style.opacity = '0';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusAI - Professional Writing Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .card {
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px) rotateX(5deg);
+            box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
+        
+        .textarea-style {
+            background: rgba(20, 20, 20, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .textarea-style:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+        
+        .result-box {
+            background: rgba(20, 20, 20, 0.7);
+            border-left: 4px solid #3b82f6;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .loading-spinner {
+            border-top-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .typing {
+            position: relative;
+        }
+        
+        .typing::after {
+            content: "|";
+            position: absolute;
+            right: -5px;
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- 3D Background -->
+    <div id="canvas-container" class="fixed inset-0 -z-10 opacity-20"></div>
+    
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-12">
+        <!-- Header -->
+        <header class="flex flex-col items-center mb-12">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-4">
+                    <i class="fas fa-robot text-white text-xl"></i>
+                </div>
+                <h1 class="text-4xl font-bold gradient-text">NexusAI</h1>
+            </div>
+            <p class="text-gray-400 text-center max-w-2xl">
+                Your professional AI-powered writing assistant with grammar checking, content generation, and smart note-taking capabilities.
+            </p>
+        </header>
+        
+        <!-- Main Card -->
+        <div class="card rounded-xl p-6 mb-8 max-w-6xl mx-auto">
+            <!-- Tabs -->
+            <div class="flex border-b border-gray-800 mb-6">
+                <button id="ai-writer-tab" class="tab-active px-4 py-2 font-medium text-sm focus:outline-none">
+                    <i class="fas fa-magic mr-2"></i> AI Writer
+                </button>
+                <button id="grammar-check-tab" class="px-4 py-2 font-medium text-sm text-gray-400 hover:text-white focus:outline-none">
+                    <i class="fas fa-spell-check mr-2"></i> Grammar Check
+                </button>
+                <button id="notes-taker-tab" class="px-4 py-2 font-medium text-sm text-gray-400 hover:text-white focus:outline-none">
+                    <i class="fas fa-sticky-note mr-2"></i> Notes Taker
+                </button>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="transition-all duration-300">
+                <!-- AI Writer Content -->
+                <div id="ai-writer-content" class="block">
+                    <div class="mb-6">
+                        <label for="ai-writer-input" class="block text-sm font-medium text-gray-300 mb-2">
+                            Enter your prompt or topic
+                        </label>
+                        <textarea id="ai-writer-input" rows="4" class="textarea-style w-full px-4 py-3 rounded-lg focus:outline-none" placeholder="e.g. 'Explain quantum computing in simple terms'"></textarea>
+                    </div>
+                    <div class="flex justify-end mb-6">
+                        <button id="generate-btn" class="btn-primary px-6 py-2 rounded-lg font-medium flex items-center">
+                            <i class="fas fa-sparkles mr-2"></i> Generate Content
+                        </button>
+                    </div>
+                    <div id="ai-writer-result" class="result-box p-6 rounded-lg hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-medium text-lg"><i class="fas fa-file-alt mr-2 text-blue-500"></i> Generated Content</h3>
+                            <button id="copy-ai-result" class="text-gray-400 hover:text-white">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div id="ai-writer-output" class="prose prose-invert max-w-none"></div>
+                    </div>
+                </div>
+                
+                <!-- Grammar Check Content -->
+                <div id="grammar-check-content" class="hidden">
+                    <div class="mb-6">
+                        <label for="grammar-check-input" class="block text-sm font-medium text-gray-300 mb-2">
+                            Enter text to check grammar
+                        </label>
+                        <textarea id="grammar-check-input" rows="4" class="textarea-style w-full px-4 py-3 rounded-lg focus:outline-none" placeholder="e.g. 'She go to school everyday'"></textarea>
+                    </div>
+                    <div class="flex justify-end mb-6">
+                        <button id="check-grammar-btn" class="btn-primary px-6 py-2 rounded-lg font-medium flex items-center">
+                            <i class="fas fa-search mr-2"></i> Check Grammar
+                        </button>
+                    </div>
+                    <div id="grammar-check-result" class="result-box p-6 rounded-lg hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-medium text-lg"><i class="fas fa-check-circle mr-2 text-green-500"></i> Corrected Text</h3>
+                            <div class="flex space-x-4">
+                                <span id="error-count" class="text-sm px-2 py-1 bg-red-900/50 rounded-full"></span>
+                                <button id="copy-grammar-result" class="text-gray-400 hover:text-white">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="grammar-check-output" class="prose prose-invert max-w-none mb-6"></div>
+                        <div id="grammar-errors" class="border-t border-gray-800 pt-4">
+                            <h4 class="font-medium text-sm text-gray-400 mb-2">Issues Found:</h4>
+                            <div id="errors-list" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notes Taker Content -->
+                <div id="notes-taker-content" class="hidden">
+                    <div class="mb-6">
+                        <label for="notes-taker-input" class="block text-sm font-medium text-gray-300 mb-2">
+                            Enter text to extract key points
+                        </label>
+                        <textarea id="notes-taker-input" rows="6" class="textarea-style w-full px-4 py-3 rounded-lg focus:outline-none" placeholder="Paste your long text here to extract key points..."></textarea>
+                    </div>
+                    <div class="flex justify-end mb-6">
+                        <button id="take-notes-btn" class="btn-primary px-6 py-2 rounded-lg font-medium flex items-center">
+                            <i class="fas fa-lightbulb mr-2"></i> Extract Notes
+                        </button>
+                    </div>
+                    <div id="notes-taker-result" class="result-box p-6 rounded-lg hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-medium text-lg"><i class="fas fa-list-ul mr-2 text-purple-500"></i> Key Points</h3>
+                            <button id="copy-notes-result" class="text-gray-400 hover:text-white">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div id="notes-taker-output" class="prose prose-invert max-w-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="max-w-6xl mx-auto mb-12">
+            <h2 class="text-2xl font-bold text-center mb-8 gradient-text">Powerful Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 rounded-full bg-blue-900/30 flex items-center justify-center mb-4 text-blue-500">
+                        <i class="fas fa-magic text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">AI Content Generation</h3>
+                    <p class="text-gray-400 text-sm">
+                        Generate high-quality content on any topic with our advanced AI writer, powered by Wikipedia and GPT technology.
+                    </p>
+                </div>
+                <div class="card rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 rounded-full bg-purple-900/30 flex items-center justify-center mb-4 text-purple-500">
+                        <i class="fas fa-spell-check text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Advanced Grammar Check</h3>
+                    <p class="text-gray-400 text-sm">
+                        Professional-grade grammar and spelling correction with detailed explanations for each issue found.
+                    </p>
+                </div>
+                <div class="card rounded-xl p-6 hover:shadow-lg transition-all duration-300">
+                    <div class="w-12 h-12 rounded-full bg-green-900/30 flex items-center justify-center mb-4 text-green-500">
+                        <i class="fas fa-lightbulb text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Smart Note Taking</h3>
+                    <p class="text-gray-400 text-sm">
+                        Extract key points from long texts automatically using advanced NLP algorithms.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Modal -->
+    <div id="loading-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 p-8 rounded-xl max-w-md w-full text-center">
+            <div class="flex justify-center mb-4">
+                <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full loading-spinner"></div>
+            </div>
+            <h3 class="text-xl font-medium mb-2" id="loading-title">Processing your request</h3>
+            <p class="text-gray-400" id="loading-message">This may take a few seconds...</p>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-4 opacity-0 transition-all duration-300 flex items-center">
+        <i class="fas fa-check-circle mr-2 text-green-500"></i>
+        <span id="notification-message">Copied to clipboard!</span>
+    </div>
+
+    <script>
+        // Initialize 3D Background
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Add floating particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 500;
+            
+            const posArray = new Float32Array(particlesCount * 3);
+            for(let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 10;
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.02,
+                color: 0x3b82f6,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+            
+            camera.position.z = 2;
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                particlesMesh.rotation.x += 0.0005;
+                particlesMesh.rotation.y += 0.0005;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        // Tab Switching
+        function setupTabs() {
+            const tabs = {
+                'ai-writer-tab': 'ai-writer-content',
+                'grammar-check-tab': 'grammar-check-content',
+                'notes-taker-tab': 'notes-taker-content'
+            };
+            
+            Object.entries(tabs).forEach(([tabId, contentId]) => {
+                const tab = document.getElementById(tabId);
+                const content = document.getElementById(contentId);
+                
+                tab.addEventListener('click', () => {
+                    // Hide all contents and remove active class from all tabs
+                    document.querySelectorAll('[id$="-content"]').forEach(el => el.classList.add('hidden'));
+                    document.querySelectorAll('[id$="-tab"]').forEach(el => {
+                        el.classList.remove('tab-active');
+                        el.classList.add('text-gray-400');
+                    });
+                    
+                    // Show selected content and set active tab
+                    content.classList.remove('hidden');
+                    tab.classList.add('tab-active');
+                    tab.classList.remove('text-gray-400');
+                });
+            });
+        }
+        
+        // Loading Modal
+        function showLoading(title, message) {
+            document.getElementById('loading-title').textContent = title;
+            document.getElementById('loading-message').textContent = message;
+            document.getElementById('loading-modal').classList.remove('hidden');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading-modal').classList.add('hidden');
+        }
+        
+        // Notification
+        function showNotification(message, isSuccess = true) {
+            const notification = document.getElementById('notification');
+            const icon = notification.querySelector('i');
+            
+            notification.querySelector('#notification-message').textContent = message;
+            
+            if (isSuccess) {
+                icon.className = 'fas fa-check-circle mr-2 text-green-500';
+            } else {
+                icon.className = 'fas fa-exclamation-circle mr-2 text-red-500';
+            }
+            
+            notification.classList.remove('translate-y-4', 'opacity-0');
+            notification.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-y-0', 'opacity-100');
+                notification.classList.add('translate-y-4', 'opacity-0');
+            }, 3000);
+        }
+        
+        // Copy to Clipboard
+        function setupCopyButtons() {
+            document.getElementById('copy-ai-result').addEventListener('click', () => {
+                const text = document.getElementById('ai-writer-output').textContent;
+                navigator.clipboard.writeText(text);
+                showNotification('Copied to clipboard!');
+            });
+            
+            document.getElementById('copy-grammar-result').addEventListener('click', () => {
+                const text = document.getElementById('grammar-check-output').textContent;
+                navigator.clipboard.writeText(text);
+                showNotification('Copied to clipboard!');
+            });
+            
+            document.getElementById('copy-notes-result').addEventListener('click', () => {
+                const text = document.getElementById('notes-taker-output').textContent;
+                navigator.clipboard.writeText(text);
+                showNotification('Copied to clipboard!');
+            });
+        }
+        
+        // API Calls
+        async function callAPI(endpoint, data) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                showNotification(`Error: ${error.message}`, false);
+                throw error;
+            }
+        }
+        
+        // AI Writer
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const input = document.getElementById('ai-writer-input').value.trim();
+            
+            if (!input) {
+                showNotification('Please enter a prompt', false);
+                return;
+            }
+            
+            showLoading('Generating Content', 'Our AI is crafting your content...');
+            
+            try {
+                const result = await callAPI('/ai_writer', { text: input });
+                
+                document.getElementById('ai-writer-output').innerHTML = result.generated_text.replace(/\n/g, '<br>');
+                document.getElementById('ai-writer-result').classList.remove('hidden');
+            } catch (error) {
+                console.error('AI Writer error:', error);
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        // Grammar Check
+        document.getElementById('check-grammar-btn').addEventListener('click', async () => {
+            const input = document.getElementById('grammar-check-input').value.trim();
+            
+            if (!input) {
+                showNotification('Please enter text to check', false);
+                return;
+            }
+            
+            showLoading('Checking Grammar', 'Analyzing your text for errors...');
+            
+            try {
+                const result = await callAPI('/grammar_check', { text: input });
+                
+                document.getElementById('grammar-check-output').innerHTML = result.corrected_text.replace(/\n/g, '<br>');
+                
+                // Display errors
+                const errorsList = document.getElementById('errors-list');
+                errorsList.innerHTML = '';
+                
+                if (result.corrections.length === 0) {
+                    errorsList.innerHTML = '<p class="text-green-500 text-sm">No issues found! Your text looks perfect.</p>';
+                } else {
+                    result.corrections.forEach(error => {
+                        const errorEl = document.createElement('div');
+                        errorEl.className = 'text-sm p-3 bg-gray-800/50 rounded-lg';
+                        errorEl.innerHTML = `
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-medium">${error.message}</span>
+                                <span class="text-xs bg-gray-700 px-2 py-1 rounded">Error</span>
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                At position ${error.offset} (${error.length} characters)
+                            </div>
+                        `;
+                        errorsList.appendChild(errorEl);
+                    });
+                }
+                
+                document.getElementById('error-count').textContent = `${result.corrections.length} ${result.corrections.length === 1 ? 'error' : 'errors'} found`;
+                document.getElementById('grammar-check-result').classList.remove('hidden');
+            } catch (error) {
+                console.error('Grammar check error:', error);
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        // Notes Taker
+        document.getElementById('take-notes-btn').addEventListener('click', async () => {
+            const input = document.getElementById('notes-taker-input').value.trim();
+            
+            if (!input) {
+                showNotification('Please enter text to analyze', false);
+                return;
+            }
+            
+            showLoading('Extracting Notes', 'Identifying key points in your text...');
+            
+            try {
+                const result = await callAPI('/notes_taker', { text: input });
+                
+                if (result.error) {
+                    showNotification(result.error, false);
+                    return;
+                }
+                
+                document.getElementById('notes-taker-output').innerHTML = result.notes.replace(/\n/g, '<br>');
+                document.getElementById('notes-taker-result').classList.remove('hidden');
+            } catch (error) {
+                console.error('Notes taker error:', error);
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initThreeJS();
+            setupTabs();
+            setupCopyButtons();
+            
+            // Add floating animation to feature cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('floating');
+            });
+        });
+    </script>
+</body>
+</html>

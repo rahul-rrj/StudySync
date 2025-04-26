@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Background Remover</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            color: #e5e5e5;
+        }
+        
+        .folder {
+            perspective: 1200px;
+            width: 240px;
+            height: 180px;
+            position: relative;
+            margin: 0 auto 40px;
+        }
+        
+        .front-side, .back-side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .front-side {
+            transform-origin: left;
+            z-index: 2;
+        }
+        
+        .back-side {
+            z-index: 1;
+            transform: translateX(15px) rotateY(-25deg);
+            filter: brightness(0.8);
+        }
+        
+        .folder:hover .front-side {
+            transform: rotateY(-170deg);
+        }
+        
+        .tip {
+            position: absolute;
+            width: 60px;
+            height: 25px;
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            top: -25px;
+            left: 0;
+            border-radius: 8px 0 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: none;
+        }
+        
+        .cover {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 32px;
+        }
+        
+        .custom-file-upload {
+            display: block;
+            padding: 14px 28px;
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            color: #e5e5e5;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 0 auto 25px;
+            width: fit-content;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 500;
+        }
+        
+        .custom-file-upload:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(145deg, #2d2d2d, #1a1a1a);
+        }
+        
+        .custom-file-upload input {
+            display: none;
+        }
+        
+        .remove-btn {
+            display: block;
+            padding: 14px 28px;
+            background: linear-gradient(145deg, #3a3a3a, #1a1a1a);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 0 auto;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .remove-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(145deg, #4a4a4a, #2a2a2a);
+        }
+        
+        .remove-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.6s;
+        }
+        
+        .remove-btn:hover::before {
+            left: 100%;
+        }
+        
+        .background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.2;
+            filter: grayscale(100%) brightness(0.5);
+        }
+        
+        .pict {
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 600px;
+            margin: 50px auto;
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            transition: all 0.5s ease;
+        }
+        
+        .pict:hover {
+            transform: perspective(1000px) rotateX(1deg) rotateY(1deg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+        
+        @media (max-width: 640px) {
+            .pict {
+                margin: 20px;
+                padding: 30px;
+            }
+        }
+        
+        /* Floating animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        
+        .folder {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Glow effect */
+        .glow {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Particle background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+    <div class="particles" id="particles"></div>
+    
+    <video autoplay loop muted playsinline class="background-video">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-digital-background-1582-large.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    
+    <div class="pict">
+        <h2 class="text-4xl font-bold text-center mb-6 text-white glow">Magic Background Remover</h2>
+        <p class="text-center text-gray-300 mb-8 text-lg">Upload your image and let AI magically remove the background in seconds!</p>
+        
+        <div class="container">
+            <div class="folder">
+                <div class="front-side">
+                    <div class="tip"></div>
+                    <div class="cover">
+                        <i class="fas fa-image"></i>
+                    </div>
+                </div>
+                <div class="back-side cover">
+                    <i class="fas fa-magic"></i>
+                </div>
+            </div>
+            
+            <label class="custom-file-upload">
+                <input id="bgRemoveFile" type="file" accept=".png, .jpg, .jpeg" />
+                <i class="fas fa-upload mr-3"></i> Choose an Image
+            </label>
+            
+            <div id="fileName" class="text-center text-sm text-gray-400 mb-6"></div>
+            
+            <div class="buttonremove">
+                <button class="remove-btn" onclick="uploadFile()">
+                    <i class="fas fa-magic mr-3"></i> Remove Background
+                </button>
+            </div>
+        </div>
+        
+        <div class="mt-10 text-center text-sm text-gray-400">
+            <p>Supports JPG, PNG formats</p>
+            <p class="mt-1">Max file size: 5MB</p>
+        </div>
+    </div>
+
+    <script>
+        // Create particle background
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 3 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 10 + 10;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Initialize particles
+        createParticles();
+        
+        document.getElementById('bgRemoveFile').addEventListener('change', function(e) {
+            const fileName = document.getElementById('fileName');
+            if (this.files.length > 0) {
+                fileName.textContent = 'Selected: ' + this.files[0].name;
+                fileName.style.color = '#ffffff';
+            } else {
+                fileName.textContent = '';
+            }
+        });
+
+        async function uploadFile() {
+            let formData = new FormData();
+            let inputElement = document.getElementById("bgRemoveFile");
+            let file = inputElement.files[0];
+
+            if (!file) {
+                alert("Please select an image!");
+                return;
+            }
+
+            // Check file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File size exceeds 5MB limit!");
+                return;
+            }
+
+            // Show loading state
+            const btn = document.querySelector('.remove-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Processing...';
+            btn.disabled = true;
+
+            formData.append("file", file);
+
+            try {
+                let response = await fetch("http://127.0.0.1:5000/remove-bg", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    let errorText = await response.json();
+                    alert("Error: " + errorText.error);
+                    return;
+                }
+
+                let blob = await response.blob();
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = "no-bg.png";
+                a.click();
+                
+                // Show success message
+                alert("Background removed successfully! Your download will start shortly.");
+            } catch (error) {
+                console.error("Upload failed:", error);
+                alert("Something went wrong. Please try again.");
+            } finally {
+                // Reset button state
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

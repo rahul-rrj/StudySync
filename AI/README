@@ -1,6 +1,6 @@
 1. Install Required Dependencies
 
-pip install flask language-tool-python sumy transformers torch nltk flask_cors
+pip install flask language-tool-python sumy transformers torch nltk flask_cors wikipdeia-api
 
 Flask → Web framework for backend.
 
