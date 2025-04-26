@@ -48,8 +48,7 @@ nltk.download('punkt')
 nltk.download('punkt_tab')
  ```
 
- ## Trae AI
-23 context(s) used
+
 
 Workspace
 
